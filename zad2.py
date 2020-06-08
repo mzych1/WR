@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import rospy
+import tf
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from turtlesim.msg  import Pose
 import math
@@ -39,7 +41,7 @@ def callback(odom):
 	global new_vel
 	global point_index
 	new_vel = Twist()
-    pose = Pose()
+    	pose = Pose()
 	pose.x = odom.pose.pose.position.x
 	pose.y = odom.pose.pose.position.y
 	pose.theta = tf.transformations.euler_from_quaternion([odom.pose.pose.orientation.x,odom.pose.pose.orientation.y,odom.pose.pose.orientation.z,odom.pose.pose.orientation.w])[2]
@@ -75,7 +77,7 @@ if __name__== "__main__":
 	rospy.init_node('zad2', anonymous=True)
 	print("ready")
 	pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-	rospy.Subscriber( '/odom' , Odometry, odom_callback)
+	rospy.Subscriber( '/odom' , Odometry, callback)
 	
 	rate=rospy.Rate(10) # 10Hz
 	while not rospy.is_shutdown():
