@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from turtlesim.msg  import Pose
 from sensor_msgs.msg import LaserScan
+import math
 
 class point:
 	def __init__(self,x,y):
@@ -12,7 +13,7 @@ class point:
 		self.y=y
 
 scan_groups = None
-destination = point(-1, -1)
+destination = point(1, 2)
 r = 0
 K_lin=1 # wspolczynnik do wyznaczania predkosci liniowej
 precision=0.1
@@ -22,12 +23,16 @@ travel_mode = 0 # 0 - wzdluz linii m; 1 - wzdluz sciany
 def scan_callback(scan):
     global scan_groups
     scan_groups = {
-        'right':  min(min(msg.ranges[0:143]), 10),
-        'fright': min(min(msg.ranges[144:287]), 10),
-        'front':  min(min(msg.ranges[288:431]), 10),
-        'fleft':  min(min(msg.ranges[432:575]), 10),
-        'left':   min(min(msg.ranges[576:719]), 10),
+        'front':  min(min(min(scan.ranges[:5]),min(scan.ranges[-5:])), 10),
+        'fleft':  min(min(scan.ranges[40:50]), 10),
+        'fright': min(min(scan.ranges[310:342]), 10),
+        'right':  min(min(scan.ranges[265:275]), 10),
+        'left':   min(min(scan.ranges[85:95]), 10),
+        'bleft':  min(min(scan.ranges[130:140]), 10),
+        'back':   min(min(scan.ranges[175:185]), 10),
+        'bright':  min(min(scan.ranges[230:240]), 10),
     }
+    print(type(scan))
 
 # wyznaczanie docelowej wartosci theta oraz odleglosci robota od punktu docelowego w danym momencie
 # T-aktualne polozenie zolwia, P-punkt docelowy
@@ -48,6 +53,7 @@ def calculate_needed_theta(T,P):
 
 # funkcja wywolywana przy przyjsciu danych o lokalizacji robota
 def odom_callback(odom):
+	global travel_mode
 	global new_vel
 	pose = Pose()
 	pose.x = odom.pose.pose.position.x
@@ -78,11 +84,11 @@ def odom_callback(odom):
 			# ruch do przodu
 			new_vel.linear.x = K_lin*r
 			new_vel.angular.z=0.0
-			if scan_groups['front'] < 5:
+			if scan_groups['front'] < 0.5:
 				new_vel.linear.x = 0.0
 				travel_mode = 1
 	else:
-		if scan_groups["left"] < 5 and scan_groups["left"] > 1 and scan_groups["fleft"] < 10:		
+		if scan_groups["fleft"] > 0.2:		
 			new_vel.angular.z = 0.0
 			new_vel.linear.x = 1.0
 		else:
