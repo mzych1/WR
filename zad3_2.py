@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import rospy
+import tf
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from turtlesim.msg  import Pose
 import math
@@ -35,10 +37,14 @@ def calculate_needed_theta(T,P):
 			alfa=-math.pi-alfa
 	return alfa
 
-def callback(pose):
+def callback(odom):
 	global new_vel
 	global point_index
 	new_vel = Twist()
+    	pose = Pose()
+	pose.x = odom.pose.pose.position.x
+	pose.y = odom.pose.pose.position.y
+	pose.theta = tf.transformations.euler_from_quaternion([odom.pose.pose.orientation.x,odom.pose.pose.orientation.y,odom.pose.pose.orientation.z,odom.pose.pose.orientation.w])[2]
 
 	if point_index>=len(points_list): # zolw dotarl juz do wszystkich punktow z listy
 		new_vel.linear.x = 0.0
@@ -70,8 +76,8 @@ if __name__== "__main__":
 	new_vel = Twist()
 	rospy.init_node('zad2', anonymous=True)
 	print("ready")
-	pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
-	rospy.Subscriber( '/turtle1/pose' , Pose, callback)
+	pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+	rospy.Subscriber( '/odom' , Odometry, callback)
 	
 	rate=rospy.Rate(10) # 10Hz
 	while not rospy.is_shutdown():
