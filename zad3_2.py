@@ -12,12 +12,12 @@ class point:
 		self.y=y
 
 # lista pnktow do ktorych zolw ma dotrzec
-points_list=[point(9,9), point(1,2), point(5.4,10), point(9.9,0.8), point(0.2, 8.75), point(0.2,0.2)] 
+points_list=[point(-1,-1), point(1,0), point(0,0), point(0,1), point(0.2, 8.75), point(0.2,0.2)] 
 point_index=0 # indeks punktu docelowego
 r=100 # odleglosc zolwia od punktu docelowego (poczatkowo ustawiam dowolna wartosc, potem zostanie ona wyznaczona)
-K_lin=8 # wspolczynnik do wyznaczania predkosci liniowej
-K_ang=7 # wspolczynnik do wyznaczania predkosci katowej
-precision=0.005
+K_lin=1 # wspolczynnik do wyznaczania predkosci liniowej
+K_ang=0.5 # wspolczynnik do wyznaczania predkosci katowej
+precision=0.1
 new_vel = Twist()
 
 # wyznaczanie docelowej wartosci theta oraz odleglosci zolwia od punktu docelowego w danym momencie
@@ -53,6 +53,7 @@ def callback(odom):
 
 	needed_theta=calculate_needed_theta(point(pose.x,pose.y), points_list[point_index])
 	if r<precision: # zolw dotarl do punktu docelowego
+		print('\n-------------------------------------------------------------------')
 		print("\nZolw dotarl do"),
 		print(str(point_index+1)),
 		print(" punktu z listy")
@@ -62,10 +63,16 @@ def callback(odom):
 		point_index=point_index+1 # indeks nowego punktu docelowego
 		return
 
+	print('punkt docelowy:		'+str(points_list[point_index].x)+'	'+str(points_list[point_index].y))
+	print('polozenie:	' + str(pose.x)+'	'+str(pose.y))
+	print('')
 	if abs(pose.theta-needed_theta) > precision:
 		# obrot
 		new_vel.linear.x = 0.0
-		new_vel.angular.z=K_ang*(needed_theta-pose.theta)
+		if needed_theta>(pose.theta-math.pi) and needed_theta<pose.theta:
+			new_vel.angular.z=0.5
+		else:
+			new_vel.angular.z=-0.5
 	else:
 		# ruch do przodu
 		new_vel.linear.x = K_lin*r
