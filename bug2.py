@@ -83,7 +83,7 @@ if __name__== "__main__":
 	pub = rospy.Publisher('/mobile_base_controller/cmd_vel', Twist, queue_size=10)
 	get_path(2,2)
 	while not rospy.is_shutdown():
-	# Wstawic kod odpowiedzialny za aktualizację zmiennej przechowujacej pozycje
+	# Wstawic kod odpowiedzialny za aktualizacje zmiennej przechowujacej pozycje
 	# ...   
 		if not len(new_path.poses) == 0:
 			# dostep do pozycji robota jest poprzez zmienna globalna 'pose'
