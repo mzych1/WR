@@ -123,7 +123,6 @@ def main():
     change_state(0)
 
     rate = rospy.Rate(20)
-
     while not rospy.is_shutdown():
         if regions_ == None:
             continue
