@@ -11,15 +11,23 @@ class point:
 		self.x=x
 		self.y=y
 
+scan_groups = None
 destination = point(-1, -1)
-r = 100
+r = 0
 K_lin=1 # wspolczynnik do wyznaczania predkosci liniowej
 precision=0.1
 travel_mode = 0 # 0 - wzdluz linii m; 1 - wzdluz sciany
 
 # funkcja wywolywana przy przyjsciu danych ze skanera laserowego
 def scan_callback(scan):
-	print scan
+    global scan_groups
+    scan_groups = {
+        'right':  min(min(msg.ranges[0:143]), 10),
+        'fright': min(min(msg.ranges[144:287]), 10),
+        'front':  min(min(msg.ranges[288:431]), 10),
+        'fleft':  min(min(msg.ranges[432:575]), 10),
+        'left':   min(min(msg.ranges[576:719]), 10),
+    }
 
 # wyznaczanie docelowej wartosci theta oraz odleglosci robota od punktu docelowego w danym momencie
 # T-aktualne polozenie zolwia, P-punkt docelowy
@@ -70,8 +78,16 @@ def odom_callback(odom):
 			# ruch do przodu
 			new_vel.linear.x = K_lin*r
 			new_vel.angular.z=0.0
+			if scan_groups['front'] < 5:
+				new_vel.linear.x = 0.0
+				travel_mode = 1
 	else:
-		# dopisac cos tam travel_mode = 1
+		if scan_groups["left"] < 5 and scan_groups["left"] > 1 and scan_groups["fleft"] < 10:		
+			new_vel.angular.z = 0.0
+			new_vel.linear.x = 1.0
+		else:
+			new_vel.angular.z = 0.5
+			new_vel.linear.x = 0.0
 
 if __name__== "__main__":
 	global new_vel
