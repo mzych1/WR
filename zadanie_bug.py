@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from turtlesim.msg  import Pose
 from sensor_msgs.msg import LaserScan
+import math
 
 class point:
 	def __init__(self,x,y):
@@ -71,6 +72,7 @@ def odom_callback(odom):
 			new_vel.linear.x = K_lin*r
 			new_vel.angular.z=0.0
 	else:
+		print(".")		
 		# dopisac cos tam travel_mode = 1
 
 if __name__== "__main__":
